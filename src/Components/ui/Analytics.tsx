@@ -26,7 +26,7 @@ function CardWrapper({
   width = "small",
 }: {
   children: ReactNode;
-  width: "small" | "large";
+  width?: "small" | "large";
 }) {
   return (
     <div className={`${width === "small" ? "w-1/2" : "w-full"} min-h-20 p-2 `}>
