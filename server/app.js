@@ -1,8 +1,15 @@
-// Import the WebSocket library
+const express = require("express");
+const http = require("http");
 const WebSocket = require("ws");
 
-// Create a new WebSocket server on port 8080
-const wss = new WebSocket.Server({ port: 8080 });
+const app = express();
+const port = 8080;
+
+// Create an HTTP server
+const server = http.createServer(app);
+
+// Create a new WebSocket server and attach it to the HTTP server
+const wss = new WebSocket.Server({ noServer: true });
 
 // Broadcast function to send messages to all clients
 function broadcast(message) {
@@ -39,4 +46,26 @@ wss.on("connection", (ws) => {
   });
 });
 
-console.log("WebSocket server is running on ws://localhost:8080");
+// Handle upgrade request and route it to WebSocket
+server.on("upgrade", (request, socket, head) => {
+  const pathname = request.url;
+
+  if (pathname === "/ws") {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit("connection", ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
+});
+
+// Define a simple GET route
+app.get("/", (req, res) => {
+  res.send("WebSocket server is running on ws://localhost:8080/ws");
+});
+
+// Start the server
+server.listen(port, () => {
+  console.log(`Express server is running on http://localhost:${port}`);
+  console.log(`WebSocket server is running on ws://localhost:${port}/ws`);
+});
